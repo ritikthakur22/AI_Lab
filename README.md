@@ -1,6 +1,6 @@
 # The Complete AI Practical Laboratory Book: A Deep Dive into Machine Learning and PyTorch
 
-Welcome to the definitive guide and textbook for the AI Practical Course (Labs 1 through 6). This book is designed to take you from a complete novice setting up a Python environment to a confident programmer capable of building and training Recurrent Neural Networks in PyTorch. 
+Welcome to the definitive guide and textbook for the AI Practical Course (Labs 1 through 7). This book is designed to take you from a complete novice setting up a Python environment to a confident programmer capable of building and training Recurrent Neural Networks and understanding advanced Word Embeddings.
 
 We will cover every theoretical concept in exhaustive depth, provide the actual code you need to run, explain exactly what every single line of that code is doing, and provide **visuals, actual data plots, and extensive real-world code examples with their outputs**.
 
@@ -142,7 +142,6 @@ Learned Weight (Slope): 2.00
 Learned Bias (Intercept): 1.00
 Predicted price for X=5.0: 11.00
 ```
-*The model perfectly learned the underlying math rule: $y = 2X + 1$.*
 
 ---
 
@@ -174,31 +173,14 @@ result = torch.matmul(tensor_A, tensor_B)
 print("Shape of A:", tensor_A.shape)
 print("Shape of B:", tensor_B.shape)
 print("Result Shape:", result.shape)
-print("Result Matrix:\n", result)
 ```
 **Console Output:**
 ```text
 Shape of A: torch.Size([2, 3])
 Shape of B: torch.Size([3, 2])
 Result Shape: torch.Size([2, 2])
-Result Matrix:
- tensor([[ 58,  64],
-         [139, 154]])
 ```
 *Notice how the inner dimensions `(3)` matched, and the resulting matrix took the outer dimensions `(2x2)`. This is the core operation happening millions of times inside Neural Networks!*
-
-### 3.3. Moving Data to the GPU
-If you have a graphics card, you can move your tensors to it for extreme speed.
-```python
-# Check if a GPU is available
-device = "cuda" if torch.cuda.is_available() else "cpu"
-
-# Create a tensor and move it
-my_tensor = torch.tensor([1, 2, 3]).to(device)
-
-print(my_tensor.device)
-# Output: cuda:0 (If you have a GPU), otherwise cpu
-```
 
 ---
 
@@ -228,22 +210,31 @@ class LinearRegressionModel(nn.Module):
 * **Green Dots (Testing Data, 20%)**: The model has *never* seen these points before. 
 * **Red Line**: The model perfectly generalized the rule to fit the green dots!
 
-### 4.3. Inspecting the Weights Before and After
-Before the training loop, our weights are random. After, they match the data.
-```python
-model = LinearRegressionModel()
+### 4.3. The Mathematics of Backpropagation (Under the Hood)
+When we call `loss.backward()` in PyTorch, it automatically performs calculus (the Chain Rule) to figure out how to adjust the weights. Here is exactly what is happening mathematically under the hood for a single training example:
 
-print("Random Weights BEFORE Training:")
-print(model.state_dict())
-# Output: OrderedDict([('weights', tensor([0.3367])), ('bias', tensor([0.1288]))])
+**Given:**
+- Input $x = 3$, True target $t = 10$
+- Current random parameters: $w = 2, b = 1$
+- Learning rate $\eta = 0.1$
 
-# ... [We run the 5 Step Training Loop for 200 epochs here] ...
+**Step 1: Forward Pass (Make a prediction and calculate error)**
+$y = wx + b ightarrow y = 2(3) + 1 = 7$
+$Loss = (y - t)^2 ightarrow Loss = (7 - 10)^2 = 9$
 
-print("Learned Weights AFTER Training:")
-print(model.state_dict())
-# Output: OrderedDict([('weights', tensor([-1.499])), ('bias', tensor([2.998]))])
-```
-*The optimizer mathematically discovered the true rule of the data using Backpropagation!*
+**Step 2: Backward Pass (Calculate Gradients using Chain Rule)**
+We need to know how much the Loss changes if we tweak $y$, $w$, or $b$.
+* Derivative of Loss w.r.t $y$:  $\frac{\partial L}{\partial y} = 2(y - t) = 2(7 - 10) = -6$
+* Derivative of $y$ w.r.t $w$:  $\frac{\partial y}{\partial w} = x = 3$
+* **Chain Rule for $w$**: $\frac{\partial L}{\partial w} = \frac{\partial L}{\partial y} \cdot \frac{\partial y}{\partial w} = (-6)(3) = -18$
+* **Chain Rule for $b$**: $\frac{\partial L}{\partial b} = \frac{\partial L}{\partial y} \cdot 1 = -6$
+
+**Step 3: Gradient Descent Update (`optimizer.step()`)**
+We update our weights by taking a small step ($\eta$) in the opposite direction of the gradient:
+* $w_{new} = w - \eta \frac{\partial L}{\partial w} ightarrow w_{new} = 2 - 0.1(-18) = 3.8$
+* $b_{new} = b - \eta \frac{\partial L}{\partial b} ightarrow b_{new} = 1 - 0.1(-6) = 1.6$
+
+PyTorch's `loss.backward()` and `optimizer.step()` perform this exact calculus for millions of parameters automatically!
 
 ---
 
@@ -271,26 +262,20 @@ Let's build a Deep Network and pass a batch of 5 data points through it, printin
 class DeepNeuralNetwork(nn.Module):
     def __init__(self):
         super().__init__()
-        # 2 input features (X and Y coordinates of the moon data)
         self.layer_1 = nn.Linear(in_features=2, out_features=10)
         self.layer_2 = nn.Linear(in_features=10, out_features=1)
         self.relu = nn.ReLU() 
 
     def forward(self, x):
        print("Input shape:", x.shape)
-       
        x = self.layer_1(x)
        print("After Layer 1:", x.shape)
-       
-       x = self.relu(x) # Shape doesn't change here, but negative numbers become 0
-       
+       x = self.relu(x)
        x = self.layer_2(x)
        print("After Layer 2 (Output):", x.shape)
-       
        return x
 
 model = DeepNeuralNetwork()
-# Create 5 fake moon data points (batch size 5, features 2)
 fake_data = torch.randn(5, 2)
 predictions = model(fake_data)
 ```
@@ -300,7 +285,7 @@ Input shape: torch.Size([5, 2])
 After Layer 1: torch.Size([5, 10])
 After Layer 2 (Output): torch.Size([5, 1])
 ```
-*The model expanded the 2 features into 10 complex hidden features, ran them through ReLU to bend them, and squished them down to 1 final probability prediction per data point.*
+*The model expanded the 2 features into 10 complex hidden features, ran them through ReLU to bend them, and squished them down to 1 final probability prediction.*
 
 ---
 
@@ -320,47 +305,82 @@ When processing step $T_1$, the RNN generates an output AND a hidden state.
 When processing step $T_2$, the RNN takes the new input for $T_2$ **PLUS** the hidden state from $T_1$. 
 
 ### 6.3. RNN PyTorch Code Example in Action
-Let's see exactly how an RNN handles a sequence in PyTorch. We will use an `input_size` of 5 and a `hidden_size` of 3.
 
 ```python
 import torch.nn as nn
 
 # Define the RNN layer
-# batch_first=True means our data is (Batch Size, Sequence Length, Input Size)
 rnn_layer = nn.RNN(input_size=5, hidden_size=3, batch_first=True)
 
-# Let's create a fake sequence of 4 days of weather/dish data for 1 cook (Batch size 1)
+# Fake sequence of 4 days of weather/dish data for 1 cook (Batch size 1)
 # Shape: (1 cook, 4 days, 5 features)
 sequence_data = torch.randn(1, 4, 5)
 
-# We must initialize the very first hidden memory state with zeros!
-# Shape: (1 layer, 1 cook, 3 hidden size)
+# Initialize the very first hidden memory state with zeros!
 initial_hidden_state = torch.zeros(1, 1, 3)
 
 # Pass the sequence through the RNN
 outputs, final_hidden_state = rnn_layer(sequence_data, initial_hidden_state)
 
-print("Input Sequence Shape:", sequence_data.shape)
 print("Outputs Shape:", outputs.shape)
 print("Final Memory State Shape:", final_hidden_state.shape)
 ```
 **Console Output:**
 ```text
-Input Sequence Shape: torch.Size([1, 4, 5])
 Outputs Shape: torch.Size([1, 4, 3])
 Final Memory State Shape: torch.Size([1, 1, 3])
 ```
 
-**Deep Explanation of the Output:**
-- `Outputs Shape: [1, 4, 3]`: The RNN returned a prediction for *every single one of the 4 days*. Each prediction is an array of 3 numbers.
+- `Outputs Shape: [1, 4, 3]`: The RNN returned a prediction for *every single one of the 4 days*.
 - `Final Memory State Shape: [1, 1, 3]`: This is the RNN's brain after experiencing all 4 days. It is exactly 3 numbers long. We can now pass this final memory state into the next day to continue predicting the future!
 
 ![Operations in RNN](6/images/operations in RNN.png)
-*(Above: The exact mathematical breakdown of how the hidden state arrays loop and combine with new inputs.)*
+
+---
+
+## Chapter 7: Word Embeddings & Encoder-Decoder Models (Lab 7)
+
+**Location**: `/home/crdy/testing/AI_lab/guide/AI_Practical_ACEM/New_Syllabus/Lab7-Encoder-Decoder/`
+
+When working with Natural Language Processing (NLP), we must convert text into numbers before feeding it into our RNN.
+
+### 7.1. Why One-Hot Vectors Fail in NLP
+A One-Hot Vector represents a word using a massive array of zeros and a single `1`.
+`hello → [1, 0, 0, 0, 0]`
+`world → [0, 1, 0, 0, 0]`
+
+**Why is this bad for Neural Networks?**
+1. **Extremely Large**: If your vocabulary has 100,000 words, every single word requires an array of 100,000 numbers (99,999 of them being useless zeros). This wastes massive amounts of RAM.
+2. **Zero Understanding of Meaning**: A one-hot vector has no semantic understanding. The mathematical distance between `king` and `queen` is exactly the same as the distance between `king` and `banana`. The model cannot know that `car` and `truck` are related because all one-hot vectors are strictly orthogonal.
+
+### 7.2. The Solution: Word Embeddings
+An **Embedding Layer** replaces the massive, sparse one-hot vector with a much smaller, dense vector of floating-point numbers.
+
+Instead of `king` being a 100,000-dimension vector of zeros, it becomes a 256-dimension dense vector:
+`king  → [0.21, 0.52, 0.18, 0.76 ...]`
+`queen → [0.20, 0.49, 0.22, 0.71 ...]`
+
+**Why is this better?**
+1. **Compact**: It compresses 100,000 dimensions down to ~256 dimensions.
+2. **Learnable Meaning**: During training, the neural network adjusts these floating-point numbers. Words that appear in similar contexts (like "The dog chased the ball" and "The cat chased the mouse") will have their embedding vectors mathematically pushed closer together. The model naturally learns that `dog ≈ cat`!
+
+### 7.3. The Encoder-Decoder Architecture
+![Data Preparation](guide/AI_Practical_ACEM/New_Syllabus/Lab7-Encoder-Decoder/images/DataPreparation.drawio.png)
+
+When translating a sentence from English to French, you cannot translate word-for-word because grammar rules differ. We use an **Encoder-Decoder**:
+1. **The Encoder RNN**: Reads the English sentence word-by-word and compresses the *entire meaning of the sentence* into a single final Hidden State (often called the Context Vector).
+2. **The Decoder RNN**: Takes that final Context Vector as its initial memory and begins generating the French sentence word-by-word until it outputs an `<END>` token.
+
+### 7.4. The Complete NLP Pipeline
+1. **Raw Text**: `"I am Groot"`
+2. **Word Indices**: `[12, 45, 891]`
+3. **Embedding Layer**: Converts the indices into dense floating-point matrices.
+4. **Encoder**: Reads the matrices and produces a Context Vector.
+5. **Decoder**: Reads the Context Vector and outputs the translated text.
 
 ---
 
 ## Final Thoughts
-By working through these 6 Labs, you have crossed the threshold from standard programming into the realm of Deep Learning. 
+By working through these 7 Labs, you have crossed the threshold from standard programming into the realm of Deep Learning. 
 
-You started by learning what AI actually is. You moved on to basic mathematical curve fitting with Linear Regression. You mastered the syntax of Tensors in PyTorch. You built a model from scratch and manually executed a backpropagation training loop. You discovered how Activation Functions allow models to perceive complex realities. Finally, you stepped into the fourth dimension of time by utilizing Recurrent Neural Networks to process sequential memory.
+You started by learning what AI actually is. You moved on to basic mathematical curve fitting with Linear Regression. You mastered the syntax of Tensors in PyTorch. You built a model from scratch and manually executed a backpropagation training loop, understanding the raw calculus behind it. You discovered how Activation Functions allow models to perceive complex realities. Finally, you stepped into the fourth dimension of time by utilizing Recurrent Neural Networks and Encoder-Decoders to process sequential memory and natural language.
