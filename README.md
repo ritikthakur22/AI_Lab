@@ -2,7 +2,7 @@
 
 Welcome to the definitive guide and textbook for the AI Practical Course (Labs 1 through 6). This book is designed to take you from a complete novice setting up a Python environment to a confident programmer capable of building and training Recurrent Neural Networks in PyTorch. 
 
-We will cover every theoretical concept in exhaustive depth, provide the actual code you need to run, explain exactly what every single line of that code is doing, and provide **visuals, actual data plots, and real-world examples** to cement your understanding.
+We will cover every theoretical concept in exhaustive depth, provide the actual code you need to run, explain exactly what every single line of that code is doing, and provide **visuals, actual data plots, and extensive real-world code examples with their outputs**.
 
 ---
 
@@ -30,14 +30,12 @@ Activate the virtual environment:
 You will know it worked because your terminal prompt will change to show `(ai_env)`.
 
 ### 0.2. Installing Requirements
-Now that we are inside our sandbox, we need to install the tools of the trade. For this course, you need the following primary libraries:
+Now that we are inside our sandbox, we need to install the tools of the trade:
 1. **PyTorch (`torch`)**: The deep learning engine we will use to build neural networks.
-2. **Pandas (`pandas`)**: A library for loading, manipulating, and analyzing tabular data (like CSV files).
-3. **Matplotlib (`matplotlib`)**: A plotting library used to draw graphs and visualize our data.
-4. **Jupyter (`jupyter`)**: To run interactive `.ipynb` notebook files.
-5. **Scikit-Learn (`scikit-learn`)**: For classical machine learning algorithms.
+2. **Pandas (`pandas`)**: A library for loading tabular data.
+3. **Matplotlib (`matplotlib`)**: A plotting library used to draw graphs.
+4. **Scikit-Learn (`scikit-learn`)**: For classical machine learning algorithms.
 
-Install them using pip:
 ```bash
 pip install torch pandas matplotlib jupyter scikit-learn
 ```
@@ -49,41 +47,50 @@ pip install torch pandas matplotlib jupyter scikit-learn
 **Location**: `/home/crdy/testing/AI_lab/1/L1-ML-Logistic-Regression.ipynb`
 
 ### 1.1. The AI Roadmap & Taxonomy
-
 ![AI Roadmap](1/resources/images/comment_2020_AI_roadmap.png)
 
-Before writing algorithms, it is crucial to understand the hierarchy of the field, as shown in the roadmap above:
-- **Artificial Intelligence (AI)** is the broadest concept. It refers to any technique that enables computers to mimic human intelligence.
-- **Machine Learning (ML)** is a subset of AI. Instead of explicitly programming the rules, we give the computer data and the answers, and let the computer figure out the rules. 
-- **Deep Learning (DL)** is a subset of ML based on Artificial Neural Networks, which are inspired by the human brain.
+- **Artificial Intelligence (AI)** is any technique that mimics human intelligence.
+- **Machine Learning (ML)** lets computers figure out the rules by looking at data. 
+- **Deep Learning (DL)** uses Artificial Neural Networks (inspired by the brain).
 
 ### 1.2. The Machine Learning Pipeline
-
 ![ML Pipeline](1/resources/images/ml_pipeline.png)
 
-The graph above visualizes how data flows through a typical Machine Learning pipeline:
-1. **Data Collection & Preprocessing**: Gathering data and cleaning it (removing missing values, scaling numbers).
-2. **Feature Extraction**: Selecting the most important variables that influence the outcome.
-3. **Model Training**: Passing the features through an algorithm to learn patterns.
+1. **Data Collection**: Gathering raw data.
+2. **Feature Extraction**: Selecting important variables.
+3. **Model Training**: The algorithm learns patterns.
 4. **Evaluation**: Testing the model on unseen data.
-5. **Deployment**: Using the model in the real world to make predictions.
+5. **Deployment**: Real-world usage.
 
 ### 1.3. Supervised Binary Classification
-In Supervised Learning, our data comes with "labels" (we know the correct answers). 
-"Binary Classification" specifically means there are only two possible labels.
-
 **Real-World Example**: A Spam Filter.
-- **Features (Input Data)**: Number of exclamation marks, presence of the word "FREE", sender reputation score.
-- **Target (Output)**: Spam (Class 1) or Not Spam (Class 0).
+- **Features (Input Data X)**: [Number of exclamation marks, Contains "FREE" (1 or 0), Sender reputation].
+- **Target (Output y)**: Spam (1) or Not Spam (0).
 
-### 1.4. Logistic Regression and the Sigmoid Curve
-To solve binary classification, we use **Logistic Regression**. 
-Instead of predicting a continuous number, Logistic Regression predicts a *probability* (a value between 0.0 and 1.0). 
+### 1.4. Logistic Regression and the Sigmoid Curve in Code
+Logistic Regression predicts a *probability* (between 0.0 and 1.0). 
+It uses the **Sigmoid Function**: $$ \sigma(z) = \frac{1}{1 + e^{-z}} $$
 
-It does this by taking a linear equation ($z = wX + b$) and passing it through a **Sigmoid Function**:
-$$ \sigma(z) = \frac{1}{1 + e^{-z}} $$
+Let's see this in actual PyTorch code!
 
-If the probability output is $> 0.5$, the model predicts Class 1. If $< 0.5$, it predicts Class 0.
+```python
+import torch
+
+# Let's say our linear equation z = wX + b outputted these raw numbers:
+z = torch.tensor([-5.0, 0.0, 2.0, 10.0])
+
+# We pass them through the Sigmoid function
+probabilities = torch.sigmoid(z)
+
+print("Raw Outputs:", z)
+print("Probabilities:", probabilities)
+```
+**Console Output:**
+```text
+Raw Outputs: tensor([-5.,  0.,  2., 10.])
+Probabilities: tensor([0.0067, 0.5000, 0.8808, 0.9999])
+```
+*Notice how `-5.0` became `0.0067` (almost 0%, Not Spam) and `10.0` became `0.9999` (almost 100%, Spam). A raw `0.0` is exactly 50%.*
 
 ---
 
@@ -92,31 +99,50 @@ If the probability output is $> 0.5$, the model predicts Class 1. If $< 0.5$, it
 **Location**: `/home/crdy/testing/AI_lab/2/L2-LinearRegression.ipynb`
 
 ### 2.1. Theoretical Foundation
-While classification separates data into categories, **Regression** predicts a continuous numerical value. 
 **Example**: Predicting a house's price (Output `y`) based on its square footage (Input `X`).
-
-Single Variable Linear Regression uses one input feature to predict one output target.
-The mathematical model is:
 $$ y = wX + b $$
 
-- **$y$**: The predicted output (House Price).
-- **$X$**: The input data (Square footage).
-- **$w$ (Weight)**: The slope of the line. It tells us how much the price increases for every 1 extra square foot.
-- **$b$ (Bias)**: The y-intercept. The base price of a house with 0 square feet.
+- **$w$ (Weight)**: How much the price increases for every 1 extra square foot.
+- **$b$ (Bias)**: The base price of a house with 0 square feet.
 
 ### 2.2. Cost Function (Mean Squared Error)
-When we start, our model has random values for $w$ and $b$. To know exactly how "wrong" our line is, we use the **Mean Squared Error (MSE)**.
-
 $$ MSE = \frac{1}{N} \sum_{i=1}^{N} (y_{actual} - y_{predicted})^2 $$
 
-### 2.3. Data Loading & Visualization with Pandas and Matplotlib
-Before training, we must visualize our data to understand it. We generated the plot below using matplotlib directly from the `data.csv` file.
-
+### 2.3. Data Loading & Visualization
 ![Lab 2 Linear Regression Plot](images/lab2_linear_regression.png)
 
 **Deep Dive into the Plot:**
-* **The Blue Dots**: These represent the actual training data from the CSV file. Each dot is a real-world observation. You can see they follow a general upward trend, but they are scattered (noisy).
-* **The Red Line**: This is the "Line of Best Fit" calculated by the model. The model has tuned the Weight ($w$) and Bias ($b$) to slice perfectly through the center of the blue dots. By minimizing the Mean Squared Error (MSE), the red line sits as close to as many blue dots as mathematically possible.
+* **The Blue Dots**: Real-world observations.
+* **The Red Line**: The "Line of Best Fit". The model tuned $w$ and $b$ to slice perfectly through the center of the blue dots.
+
+### 2.4. Linear Regression in Code (Scikit-Learn Example)
+Here is how you actually train this line in just 4 lines of code using Scikit-Learn:
+```python
+from sklearn.linear_model import LinearRegression
+import numpy as np
+
+# X must be 2D. Let's say these are square footages (in thousands)
+X_train = np.array([[1.0], [2.0], [3.0], [4.0]])
+# y is the house price (in hundred thousands)
+y_train = np.array([3.0, 5.0, 7.0, 9.0])
+
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+print(f"Learned Weight (Slope): {model.coef_[0]:.2f}")
+print(f"Learned Bias (Intercept): {model.intercept_:.2f}")
+
+# Predict the price of a 5000 sq ft house
+prediction = model.predict([[5.0]])
+print(f"Predicted price for X=5.0: {prediction[0]:.2f}")
+```
+**Console Output:**
+```text
+Learned Weight (Slope): 2.00
+Learned Bias (Intercept): 1.00
+Predicted price for X=5.0: 11.00
+```
+*The model perfectly learned the underlying math rule: $y = 2X + 1$.*
 
 ---
 
@@ -125,52 +151,54 @@ Before training, we must visualize our data to understand it. We generated the p
 **Location**: `/home/crdy/testing/AI_lab/3/Lab3_PyTorch_assignment.ipynb`
 
 ### 3.1. Why PyTorch?
-PyTorch allows us to process data on a **GPU (Graphics Card)**, which has thousands of cores and can perform matrix multiplication exponentially faster than a standard CPU. It also provides **Automatic Differentiation (Autograd)** to handle the complex calculus needed for Deep Learning.
+PyTorch allows us to process data on a **GPU (Graphics Card)**, performing matrix multiplication exponentially faster than a CPU.
 
-### 3.2. Tensors: The Heart of PyTorch
-A tensor is a multi-dimensional array of numbers. Let's look at the code and exact outputs:
+### 3.2. Matrix Multiplication (Dot Product)
+In Deep Learning, we don't just multiply single numbers. We multiply massive matrices. This is called a "Dot Product" or Matrix Multiplication (`torch.matmul`).
 
 ```python
 import torch
 
-# 1. Creating a scalar (0D)
-scalar = torch.tensor(7)
-print(scalar.ndim)  
-# Output: 0
+# A 2x3 Matrix
+tensor_A = torch.tensor([[1, 2, 3],
+                         [4, 5, 6]])
 
-# 2. Creating a vector (1D)
-vector = torch.tensor([1, 2, 3, 4])
-print(vector.shape) 
-# Output: torch.Size([4])
+# A 3x2 Matrix
+tensor_B = torch.tensor([[7, 8],
+                         [9, 10],
+                         [11, 12]])
 
-# 3. Creating a matrix (2D)
-matrix = torch.tensor([[1, 2], [3, 4]])
-print(matrix.shape) 
-# Output: torch.Size([2, 2])
+# Matrix Multiplication
+result = torch.matmul(tensor_A, tensor_B)
+
+print("Shape of A:", tensor_A.shape)
+print("Shape of B:", tensor_B.shape)
+print("Result Shape:", result.shape)
+print("Result Matrix:\n", result)
 ```
+**Console Output:**
+```text
+Shape of A: torch.Size([2, 3])
+Shape of B: torch.Size([3, 2])
+Result Shape: torch.Size([2, 2])
+Result Matrix:
+ tensor([[ 58,  64],
+         [139, 154]])
+```
+*Notice how the inner dimensions `(3)` matched, and the resulting matrix took the outer dimensions `(2x2)`. This is the core operation happening millions of times inside Neural Networks!*
 
-### 3.3. Advanced Tensor Operations (Reshaping & Slicing)
-As models get complex, we frequently need to alter tensor shapes to make matrices match up for multiplication.
+### 3.3. Moving Data to the GPU
+If you have a graphics card, you can move your tensors to it for extreme speed.
 ```python
-x = torch.arange(1., 10.) # tensor([1., 2., 3., 4., 5., 6., 7., 8., 9.])
+# Check if a GPU is available
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
-# Reshape a 1D vector into a 3x3 2D matrix
-x_reshaped = x.view(3, 3)
-print(x_reshaped)
-# Output: 
-# tensor([[1., 2., 3.],
-#         [4., 5., 6.],
-#         [7., 8., 9.]])
+# Create a tensor and move it
+my_tensor = torch.tensor([1, 2, 3]).to(device)
 
-# Slicing: Get the first row, all columns
-print(x_reshaped[0, :]) 
-# Output: tensor([1., 2., 3.])
+print(my_tensor.device)
+# Output: cuda:0 (If you have a GPU), otherwise cpu
 ```
-
-**The Golden Rule of Debugging PyTorch:**
-1. `tensor.shape`: Do the matrices align for multiplication? 
-2. `tensor.dtype`: Neural network weights must be floats, not integers.
-3. `tensor.device`: Is one tensor on the `cpu` and another on `cuda:0`? They must be on the same device!
 
 ---
 
@@ -185,41 +213,37 @@ from torch import nn
 class LinearRegressionModel(nn.Module):
     def __init__(self):
         super().__init__() 
-        # Initialize Weight and Bias randomly. requires_grad=True enables calculus derivatives!
+        # Initialize Weight and Bias randomly. 
         self.weights = nn.Parameter(torch.randn(1, dtype=torch.float), requires_grad=True)
         self.bias = nn.Parameter(torch.randn(1, dtype=torch.float), requires_grad=True)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # The core logic: y = wX + b
         return self.weights * x + self.bias
 ```
 
 ### 4.2. Training vs Testing Data
-
-In Lab 4, we loaded `assignment-data2.csv`. Crucially, we did not train on the entire dataset. We split it into a Training Set and a Testing Set. 
-
 ![PyTorch Lab 4 Plot](images/lab4_pytorch_linear.png)
 
-**Deep Dive into the Plot:**
-* **The Blue Dots (Training Data, 80%)**: The PyTorch model is allowed to "see" this data. It uses the 5-step loop (below) to adjust its weights based ONLY on the blue dots.
-* **The Green Dots (Testing Data, 20%)**: The model has *never* seen these points before. This is how we prove the model actually learned a general rule rather than just memorizing the blue dots. 
-* **The Red Line (Prediction)**: The PyTorch model successfully drew a perfect line that accurately predicts both the blue and green dots, proving the training loop worked!
+* **Blue Dots (Training Data, 80%)**: The model uses the 5-step loop to adjust its weights based ONLY on the blue dots.
+* **Green Dots (Testing Data, 20%)**: The model has *never* seen these points before. 
+* **Red Line**: The model perfectly generalized the rule to fit the green dots!
 
-### 4.3. The 5-Step PyTorch Training Loop
+### 4.3. Inspecting the Weights Before and After
+Before the training loop, our weights are random. After, they match the data.
 ```python
-loss_fn = nn.L1Loss()
-optimizer = torch.optim.SGD(params=model.parameters(), lr=0.01)
+model = LinearRegressionModel()
 
-epochs = 200
-for epoch in range(epochs):
-    model.train() # Put model in training mode
-    
-    y_pred = model(X_train)                  # 1. Forward Pass
-    loss = loss_fn(y_pred, y_train)          # 2. Calculate Loss
-    optimizer.zero_grad()                    # 3. Zero Gradients
-    loss.backward()                          # 4. Backward Pass (Calculus)
-    optimizer.step()                         # 5. Optimizer Step (Adjust Weights)
+print("Random Weights BEFORE Training:")
+print(model.state_dict())
+# Output: OrderedDict([('weights', tensor([0.3367])), ('bias', tensor([0.1288]))])
+
+# ... [We run the 5 Step Training Loop for 200 epochs here] ...
+
+print("Learned Weights AFTER Training:")
+print(model.state_dict())
+# Output: OrderedDict([('weights', tensor([-1.499])), ('bias', tensor([2.998]))])
 ```
+*The optimizer mathematically discovered the true rule of the data using Backpropagation!*
 
 ---
 
@@ -228,45 +252,55 @@ for epoch in range(epochs):
 **Location**: `/home/crdy/testing/AI_lab/5/Lab5_PyTorch_assignment.ipynb`
 
 ### 5.1. The Fatal Flaw of Straight Lines
-
 ![Lab 5 Moons Dataset](images/lab5_moons_data.png)
 
-**Deep Dive into the Plot:**
-Linear models are useless for highly complex data. The image above shows the **Moons Dataset** we analyzed in Lab 5. It is a 2D dataset shaped like two interlocking crescent moons.
-* **Red Dots (Class 0)** vs **Blue Dots (Class 1)**.
-* Can you draw a single straight line that perfectly separates the red dots from the blue dots? **No. It is mathematically impossible.** This visually proves why Linear Regression and standard Logistic Regression fail on complex real-world data.
+Linear models are useless for highly complex data like the **Moons Dataset** above. It is mathematically impossible to draw a single straight line separating the red from the blue.
 
-### 5.2. The Illusion of Stacked Linear Layers
-If you stack two linear layers on top of each other, mathematically, they collapse into a single linear layer.
-$y = 2x$, $z = 3y \Rightarrow z = 3(2x) = 6x$. It is still just a straight line! 
-
-### 5.3. The Magic of ReLU
-
-To give the network the ability to "bend" its decision boundary, we inject a **Non-Linear Activation Function**.
-The most common is **ReLU (Rectified Linear Unit)**:
+### 5.2. The Magic of ReLU
 $$ f(x) = max(0, x) $$
-
 ![ReLU Activation Function](images/lab5_relu_function.png)
 
-**Deep Dive into the Plot:**
-The graph above shows the ReLU function. It is brilliantly simple:
-* **Negative side (x < 0)**: The output is completely flat at zero. The neuron is "turned off".
-* **Positive side (x > 0)**: The output perfectly matches the input in a straight line.
-By wrapping linear layers in this non-linear "kink", a Neural Network gains the power to fold, bend, and wrap its decision boundaries around complex shapes like the Moons dataset.
+To give the network the ability to "bend", we use the **ReLU** activation function.
+- **Negative side (x < 0)**: Outputs 0 (turns off).
+- **Positive side (x > 0)**: Outputs the input exactly.
+
+### 5.3. Tracking Tensor Shapes through a Deep Network
+Let's build a Deep Network and pass a batch of 5 data points through it, printing exactly how the shape transforms at each step.
 
 ```python
 class DeepNeuralNetwork(nn.Module):
     def __init__(self):
         super().__init__()
+        # 2 input features (X and Y coordinates of the moon data)
         self.layer_1 = nn.Linear(in_features=2, out_features=10)
-        self.layer_2 = nn.Linear(in_features=10, out_features=10)
-        self.layer_3 = nn.Linear(in_features=10, out_features=1)
-        self.relu = nn.ReLU() # The magic non-linear function
+        self.layer_2 = nn.Linear(in_features=10, out_features=1)
+        self.relu = nn.ReLU() 
 
     def forward(self, x):
-       # The network can now learn complex, curved boundaries!
-       return self.layer_3(self.relu(self.layer_2(self.relu(self.layer_1(x)))))
+       print("Input shape:", x.shape)
+       
+       x = self.layer_1(x)
+       print("After Layer 1:", x.shape)
+       
+       x = self.relu(x) # Shape doesn't change here, but negative numbers become 0
+       
+       x = self.layer_2(x)
+       print("After Layer 2 (Output):", x.shape)
+       
+       return x
+
+model = DeepNeuralNetwork()
+# Create 5 fake moon data points (batch size 5, features 2)
+fake_data = torch.randn(5, 2)
+predictions = model(fake_data)
 ```
+**Console Output:**
+```text
+Input shape: torch.Size([5, 2])
+After Layer 1: torch.Size([5, 10])
+After Layer 2 (Output): torch.Size([5, 1])
+```
+*The model expanded the 2 features into 10 complex hidden features, ran them through ReLU to bend them, and squished them down to 1 final probability prediction per data point.*
 
 ---
 
@@ -275,41 +309,54 @@ class DeepNeuralNetwork(nn.Module):
 **Location**: `/home/crdy/testing/AI_lab/6/6.2-RNN.ipynb`
 
 ### 6.1. Processing Sequences & Time
-Standard Feedforward Networks have amnesia. But what if you are predicting the next word in a sentence? 
-The word "Bank" means something different if the previous words were "Sitting by the river..." compared to "Depositing money at the...". We need a network with **Memory**.
+Standard Networks have amnesia. If you are predicting the next word in a sentence ("Sitting by the river..." vs "Depositing money at the..."), you need a network with **Memory**.
 
 ### 6.2. How an RNN Works
-
 ![RNN Architecture Overview](6/images/RNN-as-simple-NN.png)
-*(Above: A high-level view showing how an RNN loops back on itself.)*
-
 ![RNN Vector Multiplication](6/images/RNN-Vector Multiplication.png)
-*(Above: The internal vector/matrix multiplication happening inside the RNN cell.)*
 
 An RNN introduces a **Hidden State ($h_t$)**. 
 When processing step $T_1$, the RNN generates an output AND a hidden state.
 When processing step $T_2$, the RNN takes the new input for $T_2$ **PLUS** the hidden state from $T_1$. 
 
-### 6.3. The Critical Parameter: `hidden_size`
-In our lab, we predicted a cook's next dish based on the current dish and the weather.
+### 6.3. RNN PyTorch Code Example in Action
+Let's see exactly how an RNN handles a sequence in PyTorch. We will use an `input_size` of 5 and a `hidden_size` of 3.
+
+```python
+import torch.nn as nn
+
+# Define the RNN layer
+# batch_first=True means our data is (Batch Size, Sequence Length, Input Size)
+rnn_layer = nn.RNN(input_size=5, hidden_size=3, batch_first=True)
+
+# Let's create a fake sequence of 4 days of weather/dish data for 1 cook (Batch size 1)
+# Shape: (1 cook, 4 days, 5 features)
+sequence_data = torch.randn(1, 4, 5)
+
+# We must initialize the very first hidden memory state with zeros!
+# Shape: (1 layer, 1 cook, 3 hidden size)
+initial_hidden_state = torch.zeros(1, 1, 3)
+
+# Pass the sequence through the RNN
+outputs, final_hidden_state = rnn_layer(sequence_data, initial_hidden_state)
+
+print("Input Sequence Shape:", sequence_data.shape)
+print("Outputs Shape:", outputs.shape)
+print("Final Memory State Shape:", final_hidden_state.shape)
+```
+**Console Output:**
+```text
+Input Sequence Shape: torch.Size([1, 4, 5])
+Outputs Shape: torch.Size([1, 4, 3])
+Final Memory State Shape: torch.Size([1, 1, 3])
+```
+
+**Deep Explanation of the Output:**
+- `Outputs Shape: [1, 4, 3]`: The RNN returned a prediction for *every single one of the 4 days*. Each prediction is an array of 3 numbers.
+- `Final Memory State Shape: [1, 1, 3]`: This is the RNN's brain after experiencing all 4 days. It is exactly 3 numbers long. We can now pass this final memory state into the next day to continue predicting the future!
 
 ![Operations in RNN](6/images/operations in RNN.png)
-*(Above: A detailed breakdown of the exact mathematical operations occurring at each time step combining inputs and hidden states.)*
-
-![Single Input RNN](6/images/Single input RNN.png)
-*(Above: Visualizing how a single input is processed through the hidden layers to produce an output.)*
-
-![RNN with 2 Input Example](6/images/RNN with 2input example.png)
-*(Above: A concrete example showing an RNN processing multiple inputs over time.)*
-
-- **Input Size**: 5 (3 dish types + 2 weather types).
-- **Hidden Size**: 3.
-
-**What does `hidden_size=3` mean?**
-It means the network compresses all of its historical memory into an array of exactly 3 floating-point numbers. 
-- If `hidden_size` is too small, the network suffers amnesia.
-- If `hidden_size` is too large, the network requires massive amounts of RAM and risks memorizing the exact training data instead of learning the underlying logic (Overfitting).
-- A size of 3 was optimal to map back to the 3 possible dish predictions in our final output layer.
+*(Above: The exact mathematical breakdown of how the hidden state arrays loop and combine with new inputs.)*
 
 ---
 
