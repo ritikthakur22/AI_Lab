@@ -2,7 +2,7 @@
 
 Welcome to the definitive guide and textbook for the AI Practical Course (Labs 1 through 6). This book is designed to take you from a complete novice setting up a Python environment to a confident programmer capable of building and training Recurrent Neural Networks in PyTorch. 
 
-We will cover every theoretical concept in exhaustive depth, provide the actual code you need to run, explain exactly what every single line of that code is doing, and provide **visuals, graphs, and real-world examples** to cement your understanding.
+We will cover every theoretical concept in exhaustive depth, provide the actual code you need to run, explain exactly what every single line of that code is doing, and provide **visuals, actual data plots, and real-world examples** to cement your understanding.
 
 ---
 
@@ -110,22 +110,13 @@ When we start, our model has random values for $w$ and $b$. To know exactly how 
 $$ MSE = \frac{1}{N} \sum_{i=1}^{N} (y_{actual} - y_{predicted})^2 $$
 
 ### 2.3. Data Loading & Visualization with Pandas and Matplotlib
-Before training, we must visualize our data. Here is how we do it:
-```python
-import pandas as pd
-import matplotlib.pyplot as plt
+Before training, we must visualize our data to understand it. We generated the plot below using matplotlib directly from the `data.csv` file.
 
-# Load data from CSV
-df = pd.read_csv('data.csv')
+![Lab 2 Linear Regression Plot](images/lab2_linear_regression.png)
 
-# Plot the data
-plt.scatter(df['X'], df['y'], color='blue', label='Actual Data')
-plt.plot(df['X'], df['predicted_y'], color='red', label='Line of Best Fit')
-plt.legend()
-plt.title("Linear Regression Visualization")
-plt.show()
-```
-*Visualizing the data ensures we don't try to fit a straight line to completely curved data.*
+**Deep Dive into the Plot:**
+* **The Blue Dots**: These represent the actual training data from the CSV file. Each dot is a real-world observation. You can see they follow a general upward trend, but they are scattered (noisy).
+* **The Red Line**: This is the "Line of Best Fit" calculated by the model. The model has tuned the Weight ($w$) and Bias ($b$) to slice perfectly through the center of the blue dots. By minimizing the Mean Squared Error (MSE), the red line sits as close to as many blue dots as mathematically possible.
 
 ---
 
@@ -203,31 +194,31 @@ class LinearRegressionModel(nn.Module):
         return self.weights * x + self.bias
 ```
 
-### 4.2. The 5-Step PyTorch Training Loop
+### 4.2. Training vs Testing Data
+
+In Lab 4, we loaded `assignment-data2.csv`. Crucially, we did not train on the entire dataset. We split it into a Training Set and a Testing Set. 
+
+![PyTorch Lab 4 Plot](images/lab4_pytorch_linear.png)
+
+**Deep Dive into the Plot:**
+* **The Blue Dots (Training Data, 80%)**: The PyTorch model is allowed to "see" this data. It uses the 5-step loop (below) to adjust its weights based ONLY on the blue dots.
+* **The Green Dots (Testing Data, 20%)**: The model has *never* seen these points before. This is how we prove the model actually learned a general rule rather than just memorizing the blue dots. 
+* **The Red Line (Prediction)**: The PyTorch model successfully drew a perfect line that accurately predicts both the blue and green dots, proving the training loop worked!
+
+### 4.3. The 5-Step PyTorch Training Loop
 ```python
-# Mean Absolute Error (L1Loss is less sensitive to extreme outliers than MSE)
 loss_fn = nn.L1Loss()
-# Stochastic Gradient Descent (SGD) with a Learning Rate of 0.01
 optimizer = torch.optim.SGD(params=model.parameters(), lr=0.01)
 
 epochs = 200
 for epoch in range(epochs):
     model.train() # Put model in training mode
     
-    # 1. Forward Pass: Make predictions
-    y_pred = model(X_train)
-    
-    # 2. Calculate the Loss: How wrong were the predictions?
-    loss = loss_fn(y_pred, y_train)
-    
-    # 3. Zero Gradients: Clear the calculus derivatives from the last loop
-    optimizer.zero_grad()
-    
-    # 4. Backward Pass: Calculate derivatives for W and B
-    loss.backward()
-    
-    # 5. Optimizer Step: Move W and B downhill to minimize error
-    optimizer.step()
+    y_pred = model(X_train)                  # 1. Forward Pass
+    loss = loss_fn(y_pred, y_train)          # 2. Calculate Loss
+    optimizer.zero_grad()                    # 3. Zero Gradients
+    loss.backward()                          # 4. Backward Pass (Calculus)
+    optimizer.step()                         # 5. Optimizer Step (Adjust Weights)
 ```
 
 ---
@@ -237,16 +228,31 @@ for epoch in range(epochs):
 **Location**: `/home/crdy/testing/AI_lab/5/Lab5_PyTorch_assignment.ipynb`
 
 ### 5.1. The Fatal Flaw of Straight Lines
-Linear models are useless for highly complex data. In Lab 5, we encountered the **Moons Dataset**—a 2D dataset shaped like two interlocking crescent moons. You cannot draw a straight line to separate them. 
+
+![Lab 5 Moons Dataset](images/lab5_moons_data.png)
+
+**Deep Dive into the Plot:**
+Linear models are useless for highly complex data. The image above shows the **Moons Dataset** we analyzed in Lab 5. It is a 2D dataset shaped like two interlocking crescent moons.
+* **Red Dots (Class 0)** vs **Blue Dots (Class 1)**.
+* Can you draw a single straight line that perfectly separates the red dots from the blue dots? **No. It is mathematically impossible.** This visually proves why Linear Regression and standard Logistic Regression fail on complex real-world data.
 
 ### 5.2. The Illusion of Stacked Linear Layers
 If you stack two linear layers on top of each other, mathematically, they collapse into a single linear layer.
 $y = 2x$, $z = 3y \Rightarrow z = 3(2x) = 6x$. It is still just a straight line! 
 
 ### 5.3. The Magic of ReLU
+
 To give the network the ability to "bend" its decision boundary, we inject a **Non-Linear Activation Function**.
 The most common is **ReLU (Rectified Linear Unit)**:
 $$ f(x) = max(0, x) $$
+
+![ReLU Activation Function](images/lab5_relu_function.png)
+
+**Deep Dive into the Plot:**
+The graph above shows the ReLU function. It is brilliantly simple:
+* **Negative side (x < 0)**: The output is completely flat at zero. The neuron is "turned off".
+* **Positive side (x > 0)**: The output perfectly matches the input in a straight line.
+By wrapping linear layers in this non-linear "kink", a Neural Network gains the power to fold, bend, and wrap its decision boundaries around complex shapes like the Moons dataset.
 
 ```python
 class DeepNeuralNetwork(nn.Module):
