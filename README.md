@@ -15,7 +15,7 @@ A virtual environment is an isolated sandbox. When you install packages in a vir
 
 Open your terminal and navigate to your project folder:
 ```bash
-cd /home/crdy/testing/AI_lab/
+cd ~/testing/AI_lab/
 ```
 
 Create the virtual environment (we will name it `ai_env`):
