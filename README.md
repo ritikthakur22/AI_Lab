@@ -44,7 +44,7 @@ pip install torch pandas matplotlib jupyter scikit-learn
 
 ## Chapter 1: Machine Learning & Supervised Binary Classification (Lab 1)
 
-**Location**: `/home/crdy/testing/AI_lab/1/L1-ML-Logistic-Regression.ipynb`
+**Location**: `~/testing/AI_lab/1/L1-ML-Logistic-Regression.ipynb`
 
 ### 1.1. The AI Roadmap & Taxonomy
 ![AI Roadmap](1/resources/images/comment_2020_AI_roadmap.png)
@@ -96,7 +96,7 @@ Probabilities: tensor([0.0067, 0.5000, 0.8808, 0.9999])
 
 ## Chapter 2: Single Variable Linear Regression (Lab 2)
 
-**Location**: `/home/crdy/testing/AI_lab/2/L2-LinearRegression.ipynb`
+**Location**: `~/testing/AI_lab/2/L2-LinearRegression.ipynb`
 
 ### 2.1. Theoretical Foundation
 **Example**: Predicting a house's price (Output `y`) based on its square footage (Input `X`).
@@ -147,7 +147,7 @@ Predicted price for X=5.0: 11.00
 
 ## Chapter 3: PyTorch Fundamentals (Lab 3)
 
-**Location**: `/home/crdy/testing/AI_lab/3/Lab3_PyTorch_assignment.ipynb`
+**Location**: `~/testing/AI_lab/3/Lab3_PyTorch_assignment.ipynb`
 
 ### 3.1. Why PyTorch?
 PyTorch allows us to process data on a **GPU (Graphics Card)**, performing matrix multiplication exponentially faster than a CPU.
@@ -186,7 +186,7 @@ Result Shape: torch.Size([2, 2])
 
 ## Chapter 4: PyTorch Linear Regression from Scratch (Lab 4)
 
-**Location**: `/home/crdy/testing/AI_lab/4/Lab4_PyTorch_assignment.ipynb`
+**Location**: `~/testing/AI_lab/4/Lab4_PyTorch_assignment.ipynb`
 
 ### 4.1. Defining the Model Structure
 ```python
@@ -240,7 +240,7 @@ PyTorch's `loss.backward()` and `optimizer.step()` perform this exact calculus f
 
 ## Chapter 5: Deep Neural Networks & Activation Functions (Lab 5)
 
-**Location**: `/home/crdy/testing/AI_lab/5/Lab5_PyTorch_assignment.ipynb`
+**Location**: `~/testing/AI_lab/5/Lab5_PyTorch_assignment.ipynb`
 
 ### 5.1. The Fatal Flaw of Straight Lines
 ![Lab 5 Moons Dataset](images/lab5_moons_data.png)
@@ -291,7 +291,7 @@ After Layer 2 (Output): torch.Size([5, 1])
 
 ## Chapter 6: Recurrent Neural Networks (RNN) (Lab 6)
 
-**Location**: `/home/crdy/testing/AI_lab/6/6.2-RNN.ipynb`
+**Location**: `~/testing/AI_lab/6/6.2-RNN.ipynb`
 
 ### 6.1. Processing Sequences & Time
 Standard Networks have amnesia. If you are predicting the next word in a sentence ("Sitting by the river..." vs "Depositing money at the..."), you need a network with **Memory**.
@@ -340,7 +340,7 @@ Final Memory State Shape: torch.Size([1, 1, 3])
 
 ## Chapter 7: Word Embeddings & Encoder-Decoder Models (Lab 7)
 
-**Location**: `/home/crdy/testing/AI_lab/guide/AI_Practical_ACEM/New_Syllabus/Lab7-Encoder-Decoder/`
+**Location**: `~/testing/AI_lab/guide/AI_Practical_ACEM/New_Syllabus/Lab7-Encoder-Decoder/`
 
 When working with Natural Language Processing (NLP), we must convert text into numbers before feeding it into our RNN.
 
