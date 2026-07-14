@@ -47,7 +47,7 @@ pip install torch pandas matplotlib jupyter scikit-learn
 **Location**: `~/testing/AI_lab/1/L1-ML-Logistic-Regression.ipynb`
 
 ### 1.1. The AI Roadmap & Taxonomy
-![AI Roadmap](1/resources/images/comment_2020_AI_roadmap.png)
+![AI-ML-DL-Data-Science](https://miro.medium.com/v2/resize:fit:1358/1*UQiAwDtQHP_MunDx5QfnHw.png)
 
 - **Artificial Intelligence (AI)** is any technique that mimics human intelligence.
 - **Machine Learning (ML)** lets computers figure out the rules by looking at data. 
