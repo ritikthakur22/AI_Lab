@@ -340,7 +340,7 @@ Final Memory State Shape: torch.Size([1, 1, 3])
 
 ## Chapter 7: Word Embeddings & Encoder-Decoder Models (Lab 7)
 
-**Location**: `~/testing/AI_lab/guide/AI_Practical_ACEM/New_Syllabus/Lab7-Encoder-Decoder/`
+**Location**: `/home/crdy/testing/AI_lab/7/`
 
 When working with Natural Language Processing (NLP), we must convert text into numbers before feeding it into our RNN.
 
@@ -378,9 +378,62 @@ When translating a sentence from English to French, you cannot translate word-fo
 4. **Encoder**: Reads the matrices and produces a Context Vector.
 5. **Decoder**: Reads the Context Vector and outputs the translated text.
 
+### 7.5. Encoder PyTorch Code Example in Action
+
+Let's see how the first half of this pipeline (The Encoder) is actually implemented in PyTorch code. We will create an Embedding layer and an RNN layer, and pass a fake sentence of 5 words through it.
+
+```python
+import torch
+import torch.nn as nn
+
+class EncoderRNN(nn.Module):
+    def __init__(self, input_vocab_size, hidden_size):
+        super(EncoderRNN, self).__init__()
+        # Compresses the sparse one-hot words into dense vectors
+        self.embedding = nn.Embedding(input_vocab_size, hidden_size)
+        # The Recurrent Neural Network
+        self.rnn = nn.RNN(hidden_size, hidden_size, batch_first=True)
+
+    def forward(self, input_seq):
+        embedded = self.embedding(input_seq)
+        output, final_hidden = self.rnn(embedded)
+        return output, final_hidden
+
+# Example: Vocabulary of 1000 words, hidden state size of 256
+encoder = EncoderRNN(input_vocab_size=1000, hidden_size=256)
+
+# Fake sequence of 5 words (e.g., "I am learning PyTorch now") for 1 user (Batch size 1)
+# Each number is the index of the word in our vocabulary
+fake_input = torch.tensor([[12, 45, 891, 23, 1]])
+
+# Pass the sequence through the Encoder
+outputs, context_vector = encoder(fake_input)
+
+print("Input Sequence Shape:", fake_input.shape)
+print("Encoder Outputs Shape:", outputs.shape)
+print("Context Vector (Final Hidden State) Shape:", context_vector.shape)
+```
+**Console Output:**
+```text
+Input Sequence Shape: torch.Size([1, 5])
+Encoder Outputs Shape: torch.Size([1, 5, 256])
+Context Vector (Final Hidden State) Shape: torch.Size([1, 1, 256])
+```
+*Notice how the entire sequence of 5 words has been read, and the RNN's brain compressed all of that meaning into a single `[1, 1, 256]` Context Vector. This exact vector is what gets passed to the Decoder to begin translation!*
+
+---
+
+## Chapter 8: Overcoming the Bottleneck with Attention Mechanisms (Upcoming Lab 8)
+
+**Location**: `/home/crdy/testing/AI_lab/guide/AI_Practical_ACEM/New_Syllabus/Lab8-Attention/`
+
+While the Encoder-Decoder model from Lab 7 is powerful, it has a fatal flaw: **The Context Vector Bottleneck**. The Encoder is forced to compress the *entire* meaning of a long sentence into a single, fixed-size array. If a sentence has 50 words, the model often "forgets" the beginning of the sentence by the time it reaches the end!
+
+In Lab 8, we will explore **Bahdanau Additive Attention**. Instead of relying on one single final state, an Attention mechanism allows the Decoder to "look back" at *all* the hidden states of the Encoder at every single time step. It dynamically calculates an "attention weight" for each word, allowing it to focus only on the most relevant source words while generating the current translation. This revolutionary idea completely eliminates the bottleneck and paved the way for modern Transformers!
+
 ---
 
 ## Final Thoughts
-By working through these 7 Labs, you have crossed the threshold from standard programming into the realm of Deep Learning. 
+By working through these 8 Labs, you have crossed the threshold from standard programming into the realm of Deep Learning. 
 
 You started by learning what AI actually is. You moved on to basic mathematical curve fitting with Linear Regression. You mastered the syntax of Tensors in PyTorch. You built a model from scratch and manually executed a backpropagation training loop, understanding the raw calculus behind it. You discovered how Activation Functions allow models to perceive complex realities. Finally, you stepped into the fourth dimension of time by utilizing Recurrent Neural Networks and Encoder-Decoders to process sequential memory and natural language.
