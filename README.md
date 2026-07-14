@@ -340,7 +340,7 @@ Final Memory State Shape: torch.Size([1, 1, 3])
 
 ## Chapter 7: Word Embeddings & Encoder-Decoder Models (Lab 7)
 
-**Location**: `/home/crdy/testing/AI_lab/7/`
+**Location**: `~/testing/AI_lab/7/`
 
 When working with Natural Language Processing (NLP), we must convert text into numbers before feeding it into our RNN.
 
@@ -425,7 +425,7 @@ Context Vector (Final Hidden State) Shape: torch.Size([1, 1, 256])
 
 ## Chapter 8: Overcoming the Bottleneck with Attention Mechanisms (Upcoming Lab 8)
 
-**Location**: `/home/crdy/testing/AI_lab/guide/AI_Practical_ACEM/New_Syllabus/Lab8-Attention/`
+**Location**: `~/testing/AI_lab/guide/AI_Practical_ACEM/New_Syllabus/Lab8-Attention/`
 
 While the Encoder-Decoder model from Lab 7 is powerful, it has a fatal flaw: **The Context Vector Bottleneck**. The Encoder is forced to compress the *entire* meaning of a long sentence into a single, fixed-size array. If a sentence has 50 words, the model often "forgets" the beginning of the sentence by the time it reaches the end!
 
