@@ -423,13 +423,63 @@ Context Vector (Final Hidden State) Shape: torch.Size([1, 1, 256])
 
 ---
 
-## Chapter 8: Overcoming the Bottleneck with Attention Mechanisms (Upcoming Lab 8)
+## Chapter 8: Overcoming the Bottleneck with Attention Mechanisms (Lab 8)
 
-**Location**: `~/testing/AI_lab/guide/AI_Practical_ACEM/New_Syllabus/Lab8-Attention/`
+**Location**: `~/testing/AI_lab/8/`
 
 While the Encoder-Decoder model from Lab 7 is powerful, it has a fatal flaw: **The Context Vector Bottleneck**. The Encoder is forced to compress the *entire* meaning of a long sentence into a single, fixed-size array. If a sentence has 50 words, the model often "forgets" the beginning of the sentence by the time it reaches the end!
 
 In Lab 8, we will explore **Bahdanau Additive Attention**. Instead of relying on one single final state, an Attention mechanism allows the Decoder to "look back" at *all* the hidden states of the Encoder at every single time step. It dynamically calculates an "attention weight" for each word, allowing it to focus only on the most relevant source words while generating the current translation. This revolutionary idea completely eliminates the bottleneck and paved the way for modern Transformers!
+
+### 8.1. Attention PyTorch Code Example in Action
+
+Let's look at how Bahdanau Attention calculates these alignments in PyTorch:
+
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class BahdanauAttention(nn.Module):
+    def __init__(self, hidden_size):
+        super(BahdanauAttention, self).__init__()
+        self.Wa = nn.Linear(hidden_size, hidden_size)
+        self.Ua = nn.Linear(hidden_size, hidden_size)
+        self.Va = nn.Linear(hidden_size, 1)
+
+    def forward(self, query, keys):
+        # query: [batch_size, 1, hidden_size]
+        # keys (encoder outputs): [batch_size, seq_len, hidden_size]
+        scores = self.Va(torch.tanh(self.Wa(query) + self.Ua(keys)))
+        scores = scores.squeeze(2).unsqueeze(1)
+
+        weights = F.softmax(scores, dim=-1)
+        context = torch.bmm(weights, keys)
+
+        return context, weights
+
+# Example shapes: batch_size=1, seq_len=5, hidden_size=256
+attention_layer = BahdanauAttention(hidden_size=256)
+fake_decoder_query = torch.randn(1, 1, 256)
+fake_encoder_outputs = torch.randn(1, 5, 256)
+
+context_vector, attn_weights = attention_layer(fake_decoder_query, fake_encoder_outputs)
+
+print("Decoder Query Shape:", fake_decoder_query.shape)
+print("Encoder Outputs Shape:", fake_encoder_outputs.shape)
+print("Dynamic Context Vector Shape:", context_vector.shape)
+print("Attention Weights Shape:", attn_weights.shape)
+print("Attention Weights (Probabilities):", attn_weights)
+```
+**Console Output:**
+```text
+Decoder Query Shape: torch.Size([1, 1, 256])
+Encoder Outputs Shape: torch.Size([1, 5, 256])
+Dynamic Context Vector Shape: torch.Size([1, 1, 256])
+Attention Weights Shape: torch.Size([1, 1, 5])
+Attention Weights (Probabilities): tensor([[[0.1852, 0.2031, 0.2105, 0.1978, 0.2034]]], grad_fn=<SoftmaxBackward0>)
+```
+*Notice how instead of a single static array, the Context Vector is dynamically created by weighting the 5 encoder outputs. The Attention Weights sum to 1.0, showing exactly how much focus is placed on each of the 5 input words!*
 
 ---
 
